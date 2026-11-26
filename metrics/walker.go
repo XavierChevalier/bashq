@@ -1,6 +1,8 @@
 package metrics
 
 import (
+	"strconv"
+
 	"mvdan.cc/sh/v3/syntax"
 )
 
@@ -64,6 +66,9 @@ func (w *walker) command(cmd syntax.Command, nesting int) {
 		}
 		w.add(c.WhilePos, kind, nesting, true)
 		w.fn.Cyclomatic++
+		if unbounded(c) {
+			w.fn.UnboundedLoops = append(w.fn.UnboundedLoops, Position{Line: int(c.WhilePos.Line()), Col: int(c.WhilePos.Col())})
+		}
 		w.conditions(c.Cond, nesting)
 		w.enter(c.WhilePos, nesting)
 		w.stmts(c.Do, nesting+1)
@@ -400,6 +405,57 @@ func (w *walker) nested(node syntax.Node, nesting int) {
 		}
 		return true
 	})
+}
+
+// unbounded reports whether a while or until loop never ends through its
+// condition: the condition is one constant command (true, :, false, or an
+// arithmetic test of a number) whose status keeps the loop going. Anything
+// else, a variable or a command that may fail, is a bound bashq cannot judge.
+func unbounded(c *syntax.WhileClause) bool {
+	if len(c.Cond) != 1 {
+		return false
+	}
+	s := c.Cond[0]
+	if s.Background || s.Coprocess || len(s.Redirs) > 0 {
+		return false
+	}
+	succeeds, constant := constantStatus(s.Cmd)
+	if !constant {
+		return false
+	}
+	if s.Negated {
+		succeeds = !succeeds
+	}
+	// while runs while the condition succeeds, until while it fails.
+	return succeeds != c.Until
+}
+
+// constantStatus tells whether a command always succeeds or always fails,
+// when it is one of the constant forms: true, :, false, (( n )).
+func constantStatus(cmd syntax.Command) (succeeds, constant bool) {
+	switch c := cmd.(type) {
+	case *syntax.CallExpr:
+		if len(c.Assigns) > 0 || len(c.Args) != 1 {
+			return false, false
+		}
+		switch c.Args[0].Lit() {
+		case "true", ":":
+			return true, true
+		case "false":
+			return false, true
+		}
+	case *syntax.ArithmCmd:
+		w, ok := c.X.(*syntax.Word)
+		if !ok {
+			return false, false
+		}
+		n, err := strconv.ParseInt(w.Lit(), 10, 64)
+		if err != nil {
+			return false, false
+		}
+		return n != 0, true
+	}
+	return false, false
 }
 
 // isCatchAll reports whether a case item matches anything: `*)`.

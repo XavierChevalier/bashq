@@ -168,7 +168,7 @@ func cmdRules(args []string, stdout, stderr io.Writer) (int, error) {
 			state = "off"
 		}
 		limit := "-"
-		if r.Kind == check.Measure {
+		if r.DefaultMax > 0 {
 			limit = fmt.Sprint(settings.Max(r.Name))
 		}
 		fmt.Fprintf(tw, "%s\t%s\t%s\t%s\n", r.Name, state, limit, r.Summary)
@@ -196,6 +196,10 @@ rules:
     max: 4
   file-length:
     max: 1000
+  line-length:       # characters per line, heredocs and comments included
+    max: 100
+  unbounded-loop:    # while true, while :, until false
+    enabled: true
 
 # Duplicated blocks: at least min-units commands and keywords over min-lines lines.
 duplication:

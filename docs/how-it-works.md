@@ -16,7 +16,8 @@ paths ─▶ discover ─▶ parse (mvdan/sh) ─┬─▶ metrics ─┐
    in parallel, one worker per CPU.
 3. **Measure** (`metrics`): one walk of the syntax tree per function. The
    walker carries the nesting level and records each increment with its
-   position, which is what `bashq explain` prints.
+   position, which is what `bashq explain` prints, and the loops whose
+   condition never ends them. The width of each line is read on the text.
 4. **Find duplicates** (`dup`): print every simple command back in canonical
    form, hash windows of consecutive units, then extend each match as far as
    both copies stay equal ([details](metrics.md#duplicated-lines)).

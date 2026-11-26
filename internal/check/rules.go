@@ -22,7 +22,8 @@ const (
 	// under it.
 	Measure Kind = iota
 	// Count rules report occurrences. A baseline row holds how many are
-	// tolerated in one function.
+	// tolerated in one function. A count rule may have a max too:
+	// line-length counts the lines wider than it.
 	Count
 )
 
@@ -33,7 +34,8 @@ type Rule struct {
 	Kind           Kind
 	Severity       string // error, warning or note (SARIF levels)
 	DefaultEnabled bool
-	DefaultMax     int
+	// DefaultMax is the threshold of a rule that has one, 0 otherwise.
+	DefaultMax int
 }
 
 // Catalog lists every rule, in the order `bashq rules` shows them.
@@ -43,6 +45,8 @@ var Catalog = []Rule{
 	{Name: "function-length", Summary: "a function is too long to fit on a screen", Kind: Measure, Severity: "warning", DefaultEnabled: true, DefaultMax: 70},
 	{Name: "nesting-depth", Summary: "control structures are nested too deep", Kind: Measure, Severity: "warning", DefaultEnabled: true, DefaultMax: 4},
 	{Name: "file-length", Summary: "a file is too long", Kind: Measure, Severity: "warning", DefaultEnabled: true, DefaultMax: 1000},
+	{Name: "line-length", Summary: "a line is too wide to read without scrolling", Kind: Count, Severity: "warning", DefaultEnabled: true, DefaultMax: 100},
+	{Name: "unbounded-loop", Summary: "a loop has no upper bound: while true, while :", Kind: Count, Severity: "warning", DefaultEnabled: true},
 	{Name: "duplication", Summary: "a block of code is a copy of another one", Kind: Count, Severity: "warning", DefaultEnabled: true},
 	{Name: "shellcheck", Summary: "ShellCheck findings, one rule per SC code", Kind: Count, Severity: "warning", DefaultEnabled: true},
 	{Name: "parse-error", Summary: "a file is not valid bash", Kind: Count, Severity: "error", DefaultEnabled: true},
@@ -103,7 +107,7 @@ func Resolve(cfg *config.Config) (*Settings, error) {
 			return nil, fmt.Errorf("rule %s: max is %d, want a positive number", name, rc.Max)
 		}
 		if rc.Max > 0 {
-			if r.Kind != Measure {
+			if r.DefaultMax == 0 {
 				return nil, fmt.Errorf("rule %s has no max", name)
 			}
 			s.max[name] = rc.Max
@@ -134,7 +138,7 @@ func (s *Settings) Excluded(rule, path string) bool {
 	return false
 }
 
-// Max returns a measure rule's threshold.
+// Max returns the threshold of a rule that has one.
 func (s *Settings) Max(name string) int { return s.max[name] }
 
 // Only runs the named rules, enabled by default or not, and disables the
