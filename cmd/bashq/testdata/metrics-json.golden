@@ -1,0 +1,58 @@
+{
+  "files": [
+    {
+      "path": "examples/deploy/rollback.sh",
+      "lines": 33,
+      "code_lines": 26,
+      "comment_lines": 3,
+      "cognitive": 1,
+      "cyclomatic": 4,
+      "functions": [
+        {
+          "name": "rollback::switch",
+          "line": 8,
+          "end_line": 27,
+          "lines": 20,
+          "cognitive": 1,
+          "cyclomatic": 2,
+          "max_nesting": 1,
+          "max_nesting_line": 19,
+          "increments": [
+            {
+              "line": 19,
+              "col": 3,
+              "kind": "if",
+              "nesting": 0,
+              "cost": 1
+            }
+          ]
+        },
+        {
+          "name": "journalctl_tail",
+          "line": 29,
+          "end_line": 31,
+          "lines": 3,
+          "cognitive": 0,
+          "cyclomatic": 1,
+          "max_nesting": 0,
+          "max_nesting_line": 0,
+          "increments": []
+        }
+      ],
+      "top_level": {
+        "name": "(top level)",
+        "line": 1,
+        "end_line": 33,
+        "lines": 33,
+        "cognitive": 0,
+        "cyclomatic": 1,
+        "max_nesting": 0,
+        "max_nesting_line": 0,
+        "increments": []
+      },
+      "duplicated_lines": 0
+    }
+  ],
+  "errors": [],
+  "duplicates": []
+}

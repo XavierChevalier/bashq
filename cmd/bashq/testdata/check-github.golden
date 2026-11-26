@@ -1,0 +1,2 @@
+::warning file=examples/deploy/deploy.sh,line=12,endLine=43,title=bashq cognitive-complexity::deploy::main has a cognitive complexity of 17 (max 15)
+::warning file=examples/deploy/rollback.sh,line=8,endLine=30,title=bashq duplication::23 lines duplicate examples/deploy/deploy.sh:46-68

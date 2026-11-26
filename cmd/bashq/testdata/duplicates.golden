@@ -1,0 +1,2 @@
+23 lines, 18 units: examples/deploy/deploy.sh:46-68 = examples/deploy/rollback.sh:8-30
+1 duplicated block, 46 duplicated lines in 2 files

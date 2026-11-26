@@ -1,0 +1,10 @@
+RULE                   STATE  MAX   DESCRIPTION
+cognitive-complexity   on     15    a function is hard to understand: too many branches, nested too deep
+cyclomatic-complexity  off    20    a function has too many paths to test
+function-length        on     70    a function is too long to fit on a screen
+nesting-depth          on     4     control structures are nested too deep
+file-length            on     1000  a file is too long
+duplication            on     -     a block of code is a copy of another one
+shellcheck             on     -     ShellCheck findings, one rule per SC code
+parse-error            on     -     a file is not valid bash
+baseline-stale         on     -     a baseline row tolerates more than the code needs: lower it

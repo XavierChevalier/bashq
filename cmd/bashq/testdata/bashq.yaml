@@ -1,0 +1,4 @@
+# Configuration of the CLI tests: ShellCheck off, its output depends on its
+# version.
+shellcheck:
+  enabled: never

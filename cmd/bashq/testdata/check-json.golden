@@ -1,0 +1,35 @@
+{
+  "version": "dev",
+  "files": 2,
+  "functions": 6,
+  "shellcheck": false,
+  "baselined": 0,
+  "findings": [
+    {
+      "rule": "cognitive-complexity",
+      "path": "examples/deploy/deploy.sh",
+      "line": 12,
+      "end_line": 43,
+      "function": "deploy::main",
+      "value": 17,
+      "max": 15,
+      "severity": "warning",
+      "message": "deploy::main has a cognitive complexity of 17 (max 15)"
+    },
+    {
+      "rule": "duplication",
+      "path": "examples/deploy/rollback.sh",
+      "line": 8,
+      "end_line": 30,
+      "function": "rollback::switch",
+      "value": 1,
+      "severity": "warning",
+      "message": "23 lines duplicate examples/deploy/deploy.sh:46-68",
+      "related": {
+        "path": "examples/deploy/deploy.sh",
+        "line": 46,
+        "end_line": 68
+      }
+    }
+  ]
+}

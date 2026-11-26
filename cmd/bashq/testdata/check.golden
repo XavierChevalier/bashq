@@ -1,0 +1,4 @@
+examples/deploy/deploy.sh:12 warning deploy::main has a cognitive complexity of 17 (max 15) [cognitive-complexity]
+examples/deploy/rollback.sh:8 warning 23 lines duplicate examples/deploy/deploy.sh:46-68 [duplication]
+
+✗ 2 issues: cognitive-complexity 1, duplication 1 (2 files, 6 functions)

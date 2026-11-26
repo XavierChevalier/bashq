@@ -1,0 +1,9 @@
+  cognitive  cyclomatic  lines  nesting  
+         17           9     32        4  deploy::main examples/deploy/deploy.sh:12
+          1           2     20        1  deploy::switch examples/deploy/deploy.sh:46
+          1           2     20        1  rollback::switch examples/deploy/rollback.sh:8
+          0           1      3        0  deploy::usage examples/deploy/deploy.sh:7
+          0           1      3        0  journalctl_tail examples/deploy/deploy.sh:67
+          0           1      3        0  journalctl_tail examples/deploy/rollback.sh:29
+
+2 files, 104 lines (86 of code), 6 functions, cognitive complexity 19, 46 duplicated lines (44.2 %)

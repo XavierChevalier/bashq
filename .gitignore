@@ -1,0 +1,4 @@
+/bashq
+/dist/
+/coverage.out
+*.sarif

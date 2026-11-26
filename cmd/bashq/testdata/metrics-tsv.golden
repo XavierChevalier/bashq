@@ -1,0 +1,7 @@
+path	line	function	cognitive	cyclomatic	lines	nesting
+examples/deploy/deploy.sh	7	deploy::usage	0	1	3	0
+examples/deploy/deploy.sh	12	deploy::main	17	9	32	4
+examples/deploy/deploy.sh	46	deploy::switch	1	2	20	1
+examples/deploy/deploy.sh	67	journalctl_tail	0	1	3	0
+examples/deploy/rollback.sh	8	rollback::switch	1	2	20	1
+examples/deploy/rollback.sh	29	journalctl_tail	0	1	3	0

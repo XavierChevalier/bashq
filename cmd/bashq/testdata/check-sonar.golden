@@ -1,0 +1,64 @@
+{
+  "issues": [
+    {
+      "ruleId": "cognitive-complexity",
+      "primaryLocation": {
+        "message": "deploy::main has a cognitive complexity of 17 (max 15)",
+        "filePath": "examples/deploy/deploy.sh",
+        "textRange": {
+          "startLine": 12,
+          "endLine": 43
+        }
+      }
+    },
+    {
+      "ruleId": "duplication",
+      "primaryLocation": {
+        "message": "23 lines duplicate examples/deploy/deploy.sh:46-68",
+        "filePath": "examples/deploy/rollback.sh",
+        "textRange": {
+          "startLine": 8,
+          "endLine": 30
+        }
+      },
+      "secondaryLocations": [
+        {
+          "message": "original copy",
+          "filePath": "examples/deploy/deploy.sh",
+          "textRange": {
+            "startLine": 46,
+            "endLine": 68
+          }
+        }
+      ]
+    }
+  ],
+  "rules": [
+    {
+      "id": "cognitive-complexity",
+      "name": "a function is hard to understand: too many branches, nested too deep",
+      "description": "https://github.com/XavierChevalier/bashq/blob/main/docs/rules.md#cognitive-complexity",
+      "engineId": "bashq",
+      "cleanCodeAttribute": "FOCUSED",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "MEDIUM"
+        }
+      ]
+    },
+    {
+      "id": "duplication",
+      "name": "a block of code is a copy of another one",
+      "description": "https://github.com/XavierChevalier/bashq/blob/main/docs/rules.md#duplication",
+      "engineId": "bashq",
+      "cleanCodeAttribute": "DISTINCT",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "MEDIUM"
+        }
+      ]
+    }
+  ]
+}

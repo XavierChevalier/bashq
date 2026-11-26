@@ -1,0 +1,35 @@
+# HELP bashq_function_cognitive_complexity Cognitive complexity of a bash function.
+# TYPE bashq_function_cognitive_complexity gauge
+bashq_function_cognitive_complexity{path="examples/deploy/rollback.sh",function="rollback::switch"} 1
+bashq_function_cognitive_complexity{path="examples/deploy/rollback.sh",function="journalctl_tail"} 0
+bashq_function_cognitive_complexity{path="examples/deploy/rollback.sh",function="(top level)"} 0
+# HELP bashq_function_cyclomatic_complexity Cyclomatic complexity of a bash function.
+# TYPE bashq_function_cyclomatic_complexity gauge
+bashq_function_cyclomatic_complexity{path="examples/deploy/rollback.sh",function="rollback::switch"} 2
+bashq_function_cyclomatic_complexity{path="examples/deploy/rollback.sh",function="journalctl_tail"} 1
+bashq_function_cyclomatic_complexity{path="examples/deploy/rollback.sh",function="(top level)"} 1
+# HELP bashq_function_lines Lines of a bash function.
+# TYPE bashq_function_lines gauge
+bashq_function_lines{path="examples/deploy/rollback.sh",function="rollback::switch"} 20
+bashq_function_lines{path="examples/deploy/rollback.sh",function="journalctl_tail"} 3
+bashq_function_lines{path="examples/deploy/rollback.sh",function="(top level)"} 33
+# HELP bashq_function_max_nesting Deepest nesting of control structures in a bash function.
+# TYPE bashq_function_max_nesting gauge
+bashq_function_max_nesting{path="examples/deploy/rollback.sh",function="rollback::switch"} 1
+bashq_function_max_nesting{path="examples/deploy/rollback.sh",function="journalctl_tail"} 0
+bashq_function_max_nesting{path="examples/deploy/rollback.sh",function="(top level)"} 0
+# HELP bashq_file_lines Lines of a script.
+# TYPE bashq_file_lines gauge
+bashq_file_lines{path="examples/deploy/rollback.sh"} 33
+# HELP bashq_file_code_lines Lines of code of a script (neither blank nor comment).
+# TYPE bashq_file_code_lines gauge
+bashq_file_code_lines{path="examples/deploy/rollback.sh"} 26
+# HELP bashq_file_cognitive_complexity Cognitive complexity of a script, all functions included.
+# TYPE bashq_file_cognitive_complexity gauge
+bashq_file_cognitive_complexity{path="examples/deploy/rollback.sh"} 1
+# HELP bashq_file_duplicated_lines Lines of a script that belong to a duplicated block.
+# TYPE bashq_file_duplicated_lines gauge
+bashq_file_duplicated_lines{path="examples/deploy/rollback.sh"} 0
+# HELP bashq_file_parse_errors 1 when a script cannot be parsed.
+# TYPE bashq_file_parse_errors gauge
+bashq_file_parse_errors{path="examples/deploy/rollback.sh"} 0

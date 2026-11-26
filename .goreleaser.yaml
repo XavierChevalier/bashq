@@ -1,0 +1,27 @@
+# Release binaries, built by .github/workflows/release.yml once release-please
+# has tagged vX.Y.Z. See CONTRIBUTING.md#releases.
+version: 2
+
+builds:
+  - main: ./cmd/bashq
+    binary: bashq
+    env: [CGO_ENABLED=0]
+    goos: [linux, darwin]
+    goarch: [amd64, arm64]
+    flags: [-trimpath]
+    ldflags: ["-s -w -X main.version={{ .Version }}"]
+
+archives:
+  - formats: [tar.gz]
+    name_template: "bashq_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    files: [LICENSE, README.md, CHANGELOG.md]
+
+checksum:
+  name_template: checksums.txt
+
+release:
+  # release-please already created the release and its notes.
+  mode: keep-existing
+
+changelog:
+  disable: true

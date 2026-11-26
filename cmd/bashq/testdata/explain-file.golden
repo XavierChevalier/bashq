@@ -1,0 +1,34 @@
+deploy::main examples/deploy/deploy.sh:12: cognitive complexity 17, cyclomatic 9, 32 lines, nesting 4
+
+  12     │ deploy::main() {
+  13     │   local dry_run=false
+  14 +1  │   if [[ "${1:-}" == "-n" ]]; then  # +1 if
+  15     │     dry_run=true
+  16     │     shift
+  17     │   fi
+  18 +1  │   [[ $# -ge 2 ]] || { deploy::usage; return 2; }  # +1 conditional
+  19     │   local version="$1"
+  20     │   shift
+  21     │ 
+  22 +1  │   for host in "$@"; do  # +1 for
+  23 +2  │     if ! ssh "${host}" true; then  # +2 if (nesting 1)
+  24     │       echo "skip ${host}: unreachable" >&2
+  25     │       continue
+  26     │     fi
+  27 +2  │     if [[ "${dry_run}" == true ]]; then  # +2 if (nesting 1)
+  28     │       echo "would deploy ${version} to ${host}"
+  29 +1  │     else  # +1 else
+  30 +3  │       for attempt in 1 2 3; do  # +3 for (nesting 2)
+  31 +4  │         if scp "app-${version}.tar.gz" "${host}:${RELEASES}/"; then  # +4 if (nesting 3)
+  32     │           break
+  33 +1  │         elif [[ "${attempt}" -eq 3 ]]; then  # +1 elif
+  34     │           echo "upload to ${host} failed" >&2
+  35     │           return 1
+  36 +1  │         else  # +1 else
+  37     │           sleep $((attempt * 2))
+  38     │         fi
+  39     │       done
+  40     │       deploy::switch "${host}" "${version}"
+  41     │     fi
+  42     │   done
+  43     │ }
