@@ -118,7 +118,7 @@ jobs:
       - uses: actions/setup-go@v7
         with:
           go-version: stable
-      - run: go install github.com/XavierChevalier/bashq/cmd/bashq@v0.1.0 # x-release-please-version
+      - run: go install github.com/XavierChevalier/bashq/cmd/bashq@v0.2.0 # x-release-please-version
       - run: bashq check --shellcheck always --format github
 ```
 

@@ -19,7 +19,7 @@ jobs:
       - uses: actions/setup-go@v7
         with:
           go-version: stable
-      - run: go install github.com/XavierChevalier/bashq/cmd/bashq@v0.1.0 # x-release-please-version
+      - run: go install github.com/XavierChevalier/bashq/cmd/bashq@v0.2.0 # x-release-please-version
       # ShellCheck is preinstalled on GitHub's Ubuntu runners.
       - run: bashq check --shellcheck always --format github
       - if: always()
@@ -66,7 +66,7 @@ bashq:
   image: golang:1.26
   script:
     - apt-get update && apt-get install -y shellcheck
-    - go install github.com/XavierChevalier/bashq/cmd/bashq@v0.1.0 # x-release-please-version
+    - go install github.com/XavierChevalier/bashq/cmd/bashq@v0.2.0 # x-release-please-version
     - bashq check --shellcheck always
 ```
 
