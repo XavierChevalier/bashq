@@ -8,7 +8,11 @@ bashq parses as bash. Check the reported position:
 
 - **zsh or ksh syntax** (`${(k)map}`, `${=var}`). Exclude the file: bashq
   does not measure zsh.
-- **A bash construct the parser rejects.** That is a bug in bashq or in
+- **`floating point arithmetic is a zsh feature`** on an associative array
+  literal: the parser reads `[key]=value` keys as arithmetic, so an
+  unquoted key with a dot (`[run.sh]=x`) fails. Quote the key:
+  `["run.sh"]=x`. Bash treats both the same.
+- **Another bash construct the parser rejects.** That is a bug in bashq or in
   mvdan/sh: open an issue with the line.
 - **The script is not shell** (a Python file named `.sh`). Exclude it, or
   give it its real extension.

@@ -6,6 +6,7 @@ import (
 	"os"
 	"runtime"
 	"sort"
+	"strings"
 	"sync"
 
 	"mvdan.cc/sh/v3/syntax"
@@ -94,7 +95,12 @@ func parseError(path string, err error) *FileError {
 	}
 	var le syntax.LangError
 	if errors.As(err, &le) {
-		fe.Line, fe.Col = int(le.Pos.Line()), int(le.Pos.Col())
+		// Its message starts with the position, which the finding has.
+		msg := le.Error()
+		if _, rest, ok := strings.Cut(msg, fmt.Sprintf("%d:%d: ", le.Pos.Line(), le.Pos.Col())); ok {
+			msg = rest
+		}
+		fe.Line, fe.Col, fe.Err = int(le.Pos.Line()), int(le.Pos.Col()), errors.New(msg)
 	}
 	return fe
 }

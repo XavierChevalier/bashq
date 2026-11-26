@@ -78,6 +78,8 @@ func Run(opts Options) (*Report, error) {
 		}
 	}
 
+	report.All = dropExcluded(report.All, settings)
+
 	baseline := Baseline{}
 	if opts.Baseline != "" {
 		if baseline, err = ReadBaseline(opts.Baseline); err != nil {
@@ -91,4 +93,17 @@ func Run(opts Options) (*Report, error) {
 	outcome := baseline.Apply(report.All, settings, analysed, opts.Ratchet)
 	report.New, report.Baselined = outcome.New, outcome.Baselined
 	return report, nil
+}
+
+// dropExcluded removes the findings of a rule on the paths it excludes. A
+// duplicated block goes when either copy is excluded.
+func dropExcluded(findings []Finding, s *Settings) []Finding {
+	kept := findings[:0]
+	for _, f := range findings {
+		if s.Excluded(f.Rule, f.Path) || (f.Related != nil && s.Excluded(f.Rule, f.Related.Path)) {
+			continue
+		}
+		kept = append(kept, f)
+	}
+	return kept
 }

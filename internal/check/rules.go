@@ -4,10 +4,13 @@ package check
 
 import (
 	"fmt"
+	"path/filepath"
+	"regexp"
 	"sort"
 	"strings"
 
 	"github.com/XavierChevalier/bashq/internal/config"
+	"github.com/XavierChevalier/bashq/internal/discover"
 )
 
 // Kind tells how a rule's findings compare with a baseline.
@@ -69,11 +72,12 @@ func IsShellCheck(name string) bool {
 type Settings struct {
 	enabled map[string]bool
 	max     map[string]int
+	exclude map[string][]*regexp.Regexp
 }
 
 // Resolve applies a configuration to the catalog defaults.
 func Resolve(cfg *config.Config) (*Settings, error) {
-	s := &Settings{enabled: map[string]bool{}, max: map[string]int{}}
+	s := &Settings{enabled: map[string]bool{}, max: map[string]int{}, exclude: map[string][]*regexp.Regexp{}}
 	for _, r := range Catalog {
 		s.enabled[r.Name] = r.DefaultEnabled
 		s.max[r.Name] = r.DefaultMax
@@ -91,6 +95,9 @@ func Resolve(cfg *config.Config) (*Settings, error) {
 		}
 		if rc.Enabled != nil {
 			s.enabled[name] = *rc.Enabled
+		}
+		for _, g := range rc.Exclude {
+			s.exclude[name] = append(s.exclude[name], discover.Glob(g))
 		}
 		if rc.Max < 0 {
 			return nil, fmt.Errorf("rule %s: max is %d, want a positive number", name, rc.Max)
@@ -111,6 +118,20 @@ func (s *Settings) Enabled(name string) bool {
 		name = "shellcheck"
 	}
 	return s.enabled[name]
+}
+
+// Excluded reports whether a rule's exclude globs match path.
+func (s *Settings) Excluded(rule, path string) bool {
+	if IsShellCheck(rule) {
+		rule = "shellcheck"
+	}
+	path = filepath.ToSlash(filepath.Clean(path))
+	for _, g := range s.exclude[rule] {
+		if g.MatchString(path) {
+			return true
+		}
+	}
+	return false
 }
 
 // Max returns a measure rule's threshold.

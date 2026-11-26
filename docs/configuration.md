@@ -73,6 +73,20 @@ One entry per rule, by its name ([Rules](rules.md)):
 | --- | --- | --- |
 | `enabled` | boolean | turn the rule on or off (default: the rule's) |
 | `max` | integer ≥ 1 | the threshold of a measure rule: values over it are reported |
+| `exclude` | list of globs | paths where the rule does not apply ([same syntax](#exclude)); the files are still analysed by the other rules |
+
+```yaml
+rules:
+  # One-shot scripts are copies of each other on purpose, and tests repeat
+  # their setup: no duplication there, every other rule still applies.
+  duplication:
+    exclude: ["scripts/oneshot", "*.test.sh"]
+  shellcheck:
+    exclude: [legacy]
+```
+
+A duplicated block is dropped when either copy is excluded. Baseline rows
+on excluded paths are ignored.
 
 `--max <rule>=<n>` overrides a max for one run, and `--rule <rule>` runs only
 the rules named, even ones that are off.

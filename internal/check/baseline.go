@@ -122,7 +122,8 @@ type Outcome struct {
 //   - With ratchet, a row that tolerates more than the code needs (the
 //     value went down, the finding is gone) is a baseline-stale finding:
 //     the baseline only shrinks. Rows of rules that did not run are left
-//     alone, and so are rows of paths that were not analysed.
+//     alone, and so are rows of paths that were not analysed or that the
+//     rule excludes.
 func (b Baseline) Apply(findings []Finding, s *Settings, analysed map[string]bool, ratchet bool) Outcome {
 	var out Outcome
 	actual := NewBaseline(findings)
@@ -146,7 +147,7 @@ func (b Baseline) Apply(findings []Finding, s *Settings, analysed map[string]boo
 
 	if ratchet {
 		for k, allowed := range b {
-			if !s.Enabled(k.Rule) || !analysed[k.Path] || actual[k] >= allowed {
+			if !s.Enabled(k.Rule) || !analysed[k.Path] || s.Excluded(k.Rule, k.Path) || actual[k] >= allowed {
 				continue
 			}
 			msg := fmt.Sprintf("baseline tolerates %s at %d, the code is now at %d: lower the row (bashq baseline)", k.Rule, allowed, actual[k])
