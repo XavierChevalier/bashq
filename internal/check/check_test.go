@@ -291,3 +291,48 @@ exit 1
 		t.Errorf("shellcheck crash: err = %v", err)
 	}
 }
+
+func TestRuleExclude(t *testing.T) {
+	var body strings.Builder
+	for i := range 12 {
+		body.WriteString("  step_" + string(rune('a'+i)) + " --flag\n")
+	}
+	dir := project(t, map[string]string{
+		"lib/a.sh":       complex,
+		"oneshot/old.sh": "a() {\n" + body.String() + "}\n",
+		"oneshot/new.sh": "b() {\n" + body.String() + "}\n" + complex,
+	})
+	cfg := cfgWith(t, `
+rules:
+  cognitive-complexity: {max: 1, exclude: ["lib/*.sh"]}
+  duplication: {exclude: [oneshot]}
+duplication: {min-units: 10, min-lines: 10}
+shellcheck: {enabled: never}
+`)
+	r, err := Run(Options{Config: cfg, Paths: []string{"."}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := rules(r.New); got != "cognitive-complexity@oneshot/new.sh:f" {
+		t.Errorf("findings = %s: excluded paths must drop only their rule", got)
+	}
+
+	// A baseline row on an excluded path is not stale: the rule does not apply there.
+	baseline := filepath.Join(dir, "b.tsv")
+	os.WriteFile(baseline, []byte("cognitive-complexity\tlib/a.sh\tf\t6\ncognitive-complexity\toneshot/new.sh\tf\t6\n"), 0o644)
+	r, _ = Run(Options{Config: cfg, Paths: []string{"."}, Baseline: baseline, Ratchet: true})
+	if len(r.New) != 0 {
+		t.Errorf("findings = %s, want none", rules(r.New))
+	}
+}
+
+func TestParseErrorMessageHasNoPosition(t *testing.T) {
+	project(t, map[string]string{"zsh.sh": "f() {\n  local -A x=([a.b]=1)\n}\n"})
+	r, err := Run(Options{Config: cfgWith(t, "shellcheck: {enabled: never}\n"), Paths: []string{"."}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(r.New) != 1 || r.New[0].Line != 2 || strings.Contains(r.New[0].Message, "zsh.sh") {
+		t.Errorf("findings = %+v", r.New)
+	}
+}

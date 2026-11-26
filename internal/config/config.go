@@ -42,6 +42,9 @@ type Rule struct {
 	Enabled *bool `yaml:"enabled"`
 	// Max is the threshold of a measure rule; 0 keeps the default.
 	Max int `yaml:"max"`
+	// Exclude lists globs of paths where the rule does not apply (same
+	// syntax as the top-level exclude).
+	Exclude []string `yaml:"exclude"`
 }
 
 // Duplication configures the duplicated-code detection.
