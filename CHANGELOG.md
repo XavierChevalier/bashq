@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.0](https://github.com/XavierChevalier/bashq/compare/v0.1.0...v0.2.0) (2026-11-26)
+
+
+### Features
+
+* line-length and unbounded-loop rules ([ae74daa](https://github.com/XavierChevalier/bashq/commit/ae74daaf2f90491a8a4bbe426fe1a72203b3ea42))
+* line-length and unbounded-loop rules ([84134a8](https://github.com/XavierChevalier/bashq/commit/84134a8260819718f816a71e92c6d61f8343dc34))
+
 ## 0.1.0 (2026-11-26)
 
 

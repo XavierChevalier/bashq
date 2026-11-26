@@ -21,7 +21,7 @@ Each [release](https://github.com/XavierChevalier/bashq/releases/latest)
 has archives for Linux and macOS (amd64, arm64), with a `checksums.txt`.
 
 ```bash
-version=0.1.0 # x-release-please-version
+version=0.2.0 # x-release-please-version
 os=linux arch=amd64
 curl -fsSLO "https://github.com/XavierChevalier/bashq/releases/download/v${version}/bashq_${version}_${os}_${arch}.tar.gz"
 curl -fsSLO "https://github.com/XavierChevalier/bashq/releases/download/v${version}/checksums.txt"
