@@ -12,6 +12,7 @@ import (
 	"bytes"
 	"fmt"
 	"strings"
+	"unicode/utf8"
 
 	"mvdan.cc/sh/v3/syntax"
 )
@@ -41,6 +42,10 @@ type File struct {
 	Functions []*Function `json:"functions"`
 	// TopLevel measures the code outside any function.
 	TopLevel *Function `json:"top_level"`
+	// LineWidths is the width of each physical line, in characters (runes;
+	// a tab counts 1). Unlike the other measures it is read on the text:
+	// heredoc bodies, strings and comments count.
+	LineWidths []int `json:"-"`
 }
 
 // Function holds the measures of one function.
@@ -61,6 +66,16 @@ type Function struct {
 	MaxNestingLine int `json:"max_nesting_line"`
 	// Increments explains Cognitive: each structure that costs something.
 	Increments []Increment `json:"increments"`
+	// UnboundedLoops are the while and until loops of the function whose
+	// condition is a constant that never ends them (while true, while :,
+	// until false, while (( 1 ))): only a break or a return gets out.
+	UnboundedLoops []Position `json:"-"`
+}
+
+// Position is a place in a script.
+type Position struct {
+	Line int
+	Col  int
 }
 
 // Increment is one contribution to a cognitive complexity.
@@ -167,6 +182,10 @@ func countLines(file *File, src []byte, tree *syntax.File) {
 		lines = lines[:len(lines)-1]
 	}
 	file.Lines = len(lines)
+	file.LineWidths = make([]int, len(lines))
+	for i, line := range lines {
+		file.LineWidths[i] = utf8.RuneCountInString(strings.TrimSuffix(line, "\r"))
+	}
 
 	commentCol := map[int]int{}
 	syntax.Walk(tree, func(node syntax.Node) bool {

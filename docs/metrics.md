@@ -3,9 +3,9 @@
 # Metrics
 
 bashq measures every function of a script, and the code outside functions
-as a pseudo-function named `(top level)`. All measures come from the syntax
-tree, so text in strings, heredocs and comments never counts. Neither do the
-awk, jq or SQL programs a script passes as arguments.
+as a pseudo-function named `(top level)`. All measures but line width come
+from the syntax tree, so text in strings, heredocs and comments never
+counts. Neither do the awk, jq or SQL programs a script passes as arguments.
 
 | Measure | Of | Rule that uses it |
 | --- | --- | --- |
@@ -13,6 +13,7 @@ awk, jq or SQL programs a script passes as arguments.
 | [Cyclomatic complexity](#cyclomatic-complexity) | function | [`cyclomatic-complexity`](rules.md#cyclomatic-complexity) |
 | [Length](#length) | function, file | [`function-length`](rules.md#function-length), [`file-length`](rules.md#file-length) |
 | [Nesting depth](#nesting-depth) | function | [`nesting-depth`](rules.md#nesting-depth) |
+| [Line width](#line-width) | line | [`line-length`](rules.md#line-length) |
 | [Lines of code and comments](#lines-of-code-and-comments) | file | none (reported by `bashq metrics`) |
 | [Duplicated lines](#duplicated-lines) | file | [`duplication`](rules.md#duplication) |
 
@@ -164,6 +165,14 @@ default.
 The length of a function is its number of lines, from the line of its name
 to the line of its closing brace, blank and comment lines included. The
 length of a file is its number of lines.
+
+## Line width
+
+The width of a line is its number of characters: Unicode characters, not
+bytes, a tab counts 1, and the `\r` of a CRLF line ending does not count.
+It is the one measure read on the text rather than on the syntax tree:
+comments, strings and heredoc bodies count, since they are as wide to read
+as code.
 
 ## Nesting depth
 

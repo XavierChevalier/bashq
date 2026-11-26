@@ -234,6 +234,62 @@ func TestCountRulesInTheBaseline(t *testing.T) {
 	}
 }
 
+func TestLineLength(t *testing.T) {
+	wide := "  echo " + strings.Repeat("x", 30)
+	project(t, map[string]string{"a.sh": "#!/usr/bin/env bash\nf() {\n" + wide + "\n" + wide + "x\n}\n" + wide + "\n"})
+	cfg := cfgWith(t, "rules:\n  line-length: {max: 36}\nshellcheck: {enabled: never}\n")
+	r, err := Run(Options{Config: cfg, Paths: []string{"."}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := rules(r.New); got != "line-length@a.sh:f line-length@a.sh:f line-length@a.sh:(top level)" {
+		t.Fatalf("findings = %s", got)
+	}
+	f := r.New[1]
+	if f.Line != 4 || f.Col != 37 || f.Value != 38 || f.Max != 36 || f.Message != "line is 38 characters long (max 36)" {
+		t.Errorf("finding = %+v", f)
+	}
+
+	// The baseline counts the long lines of a function: one more fails,
+	// even a shorter one; one fewer is stale.
+	b := NewBaseline(r.New)
+	if got := b[Key{Rule: "line-length", Path: "a.sh", Function: "f"}]; got != 2 {
+		t.Errorf("baseline row = %d, want 2 lines", got)
+	}
+	s, _ := Resolve(cfg)
+	analysed := map[string]bool{"a.sh": true}
+	if out := b.Apply(append(r.New, r.New[0]), s, analysed, true); len(out.New) != 3 {
+		t.Errorf("a third long line in f: want its 3 lines reported, got %s", rules(out.New))
+	}
+	if out := b.Apply(r.New[1:], s, analysed, true); rules(out.New) != "baseline-stale@a.sh:f" {
+		t.Errorf("one line fixed: want a stale row, got %s", rules(out.New))
+	}
+
+	cfg = cfgWith(t, "rules:\n  line-length: {max: 38}\nshellcheck: {enabled: never}\n")
+	if r, _ := Run(Options{Config: cfg, Paths: []string{"."}}); len(r.New) != 0 {
+		t.Errorf("at the max: findings = %s, want none", rules(r.New))
+	}
+}
+
+func TestUnboundedLoop(t *testing.T) {
+	project(t, map[string]string{"a.sh": "f() {\n  while true; do\n    poll || break\n  done\n}\nwhile :; do f; done\n"})
+	r, err := Run(Options{Config: cfgWith(t, "shellcheck: {enabled: never}\n"), Paths: []string{"."}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := rules(r.New); got != "unbounded-loop@a.sh:f unbounded-loop@a.sh:(top level)" {
+		t.Fatalf("findings = %s", got)
+	}
+	f := r.New[0]
+	if f.Line != 2 || f.Col != 3 || f.Value != 1 || f.Severity != "warning" ||
+		f.Message != "loop with no upper bound: bound it (a max count or a deadline) or assert one inside" {
+		t.Errorf("finding = %+v", f)
+	}
+	if _, err := Resolve(cfgWith(t, "rules:\n  unbounded-loop: {max: 3}\n")); err == nil {
+		t.Errorf("unbounded-loop has no max: want an error")
+	}
+}
+
 func TestReadBaseline(t *testing.T) {
 	dir := t.TempDir()
 	path := filepath.Join(dir, "b.tsv")

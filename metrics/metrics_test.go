@@ -216,6 +216,67 @@ func TestLineCounts(t *testing.T) {
 	}
 }
 
+func TestUnboundedLoops(t *testing.T) {
+	cases := []struct {
+		name string
+		body string
+		want int
+	}{
+		{"while true", `while true; do a; done`, 1},
+		{"while :", `while :; do a; done`, 1},
+		{"until false", `until false; do a; done`, 1},
+		{"while (( 1 ))", `while (( 1 )); do a; done`, 1},
+		{"while ! false", `while ! false; do a; done`, 1},
+		{"until ! true", `until ! true; do a; done`, 1},
+		{"in a pipeline's command substitution", `x=$(while true; do a; done)`, 1},
+		{"nested loops count each", `while true; do while :; do a; done; done`, 2},
+		{"a command may fail", `while read -r l; do a; done`, 0},
+		{"a test is a bound", `while [[ $i -lt 3 ]]; do a; done`, 0},
+		{"while false never runs", `while false; do a; done`, 0},
+		{"until true never runs", `until true; do a; done`, 0},
+		{"while (( 0 )) never runs", `while (( 0 )); do a; done`, 0},
+		{"while (( n )) is a variable", `while (( n )); do a; done`, 0},
+		{"true with an argument", `while true x; do a; done`, 0},
+		{"two commands: the last one decides", `while a; true; do b; done`, 0},
+		{"redirected", `while true >/dev/null; do a; done`, 0},
+		{"assignment", `while x=1 true; do a; done`, 0},
+		{"quoted", `while 'true'; do a; done`, 0},
+		{"a string", `echo "while true; do x; done"`, 0},
+		{"a heredoc", "cat <<EOF\nwhile true; do x; done\nEOF", 0},
+		{"a comment", "# while true; do x; done\necho", 0},
+		{"for is bounded by its list", `for x in true; do a; done`, 0},
+	}
+	for _, tc := range cases {
+		fn := function(t, "f() {\n"+tc.body+"\n}\n", "f")
+		if got := len(fn.UnboundedLoops); got != tc.want {
+			t.Errorf("%s: %q: %d unbounded loops, want %d", tc.name, tc.body, got, tc.want)
+		}
+	}
+
+	fn := function(t, "f() {\n  while :; do a; done\n}\n", "f")
+	if got := fn.UnboundedLoops[0]; got != (Position{Line: 2, Col: 3}) {
+		t.Errorf("position = %+v, want line 2 col 3 (the while keyword)", got)
+	}
+	if top := analyze(t, "f() { :; }\nwhile true; do a; done\n").TopLevel; len(top.UnboundedLoops) != 1 {
+		t.Errorf("a loop outside functions is the top level's")
+	}
+}
+
+func TestLineWidths(t *testing.T) {
+	src := "echo a\n\techo b\nécho\r\ncat <<EOF\n" + strings.Repeat("x", 120) + "\nEOF\n"
+	f := analyze(t, src)
+	want := []int{6, 7, 4, 9, 120, 3}
+	if len(f.LineWidths) != len(want) {
+		t.Fatalf("widths = %v, want %v", f.LineWidths, want)
+	}
+	for i := range want {
+		if f.LineWidths[i] != want[i] {
+			t.Errorf("widths = %v, want %v: runes, a tab counts 1, no \\r, heredocs count", f.LineWidths, want)
+			break
+		}
+	}
+}
+
 func TestParseError(t *testing.T) {
 	_, err := Analyze("bad.sh", []byte("if a; then\n"))
 	if err == nil || !strings.Contains(err.Error(), "bad.sh:") {

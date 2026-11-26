@@ -131,9 +131,10 @@ type Finding struct {
 	// functions, "" for a whole file). The baseline keys on it rather than
 	// on lines, so it survives edits elsewhere in the file.
 	Function string `json:"function,omitempty"`
-	// Value is the measure (Measure rules); 1 for Count rules.
+	// Value is the measure (Measure rules, and the width of a line for
+	// line-length); 1 for other Count rules.
 	Value int `json:"value"`
-	// Max is the threshold Value went over (Measure rules).
+	// Max is the threshold Value went over (rules with a max).
 	Max      int    `json:"max,omitempty"`
 	Severity string `json:"severity"`
 	Message  string `json:"message"`
@@ -200,7 +201,24 @@ func (a *Analysis) Findings(s *Settings) []Finding {
 				})
 			}
 		}
+		if s.Enabled("line-length") {
+			for i, width := range file.LineWidths {
+				if over("line-length", width) {
+					add(Finding{
+						Rule: "line-length", Location: Location{Path: file.Path, Line: i + 1, Col: s.Max("line-length") + 1},
+						Function: file.FunctionAt(i + 1).Name, Value: width, Max: s.Max("line-length"),
+						Message: fmt.Sprintf("line is %d characters long (max %d)", width, s.Max("line-length")),
+					})
+				}
+			}
+		}
 		for _, fn := range append([]*metrics.Function{file.TopLevel}, file.Functions...) {
+			for _, loop := range fn.UnboundedLoops {
+				add(Finding{
+					Rule: "unbounded-loop", Location: Location{Path: file.Path, Line: loop.Line, Col: loop.Col}, Function: fn.Name,
+					Message: "loop with no upper bound: bound it (a max count or a deadline) or assert one inside",
+				})
+			}
 			if over("nesting-depth", fn.MaxNesting) {
 				add(Finding{
 					Rule: "nesting-depth", Location: Location{Path: file.Path, Line: fn.MaxNestingLine}, Function: fn.Name,

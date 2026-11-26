@@ -44,7 +44,7 @@ Code outside functions is `(top level)`, and file-wide findings
 | Rule kind | Value | A finding passes while |
 | --- | --- | --- |
 | measure (`cognitive-complexity`, `cyclomatic-complexity`, `function-length`, `nesting-depth`, `file-length`) | the measure tolerated | its measure is ≤ the value |
-| count (`duplication`, `SC…`) | the number tolerated in that function | the function has ≤ that many |
+| count (`line-length`, `unbounded-loop`, `duplication`, `SC…`) | the number tolerated in that function | the function has ≤ that many |
 
 The rows are sorted by path, then function, then rule, so the baseline's
 diff in a pull request shows which debt it adds or pays off.

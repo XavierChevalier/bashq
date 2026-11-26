@@ -27,6 +27,10 @@ rules:
     max: 4
   file-length:
     enabled: false
+  line-length:
+    max: 120
+  unbounded-loop:
+    exclude: [daemons]
 
 duplication:
   min-units: 15
@@ -72,7 +76,7 @@ One entry per rule, by its name ([Rules](rules.md)):
 | Key | Type | Meaning |
 | --- | --- | --- |
 | `enabled` | boolean | turn the rule on or off (default: the rule's) |
-| `max` | integer ≥ 1 | the threshold of a measure rule: values over it are reported |
+| `max` | integer ≥ 1 | the threshold of a rule that has one (the measure rules and `line-length`): values over it are reported |
 | `exclude` | list of globs | paths where the rule does not apply ([same syntax](#exclude)); the files are still analysed by the other rules |
 
 ```yaml

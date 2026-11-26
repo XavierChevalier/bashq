@@ -14,7 +14,8 @@ SonarQube, for the language SonarQube's free edition does not analyse.
   annotates a function.
 - **Find copies**: blocks of code duplicated within a script or across
   scripts, whatever their indentation, quoting style or comments.
-- **Gate** with `bashq check`. It applies thresholds, merges in ShellCheck's
+- **Gate** with `bashq check`. It applies thresholds, flags lines over 100
+  characters and loops with no bound (`while true`), merges in ShellCheck's
   findings, and fails on new issues only: a baseline keeps today's debt, and
   that baseline can only shrink.
 - **Report** as text, JSON, SARIF (GitHub code scanning), GitHub

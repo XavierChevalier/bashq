@@ -12,13 +12,16 @@ settings in force (defaults, then [`.bashq.yaml`](configuration.md)).
 | [`function-length`](#function-length) | on, max 70 | a function longer than a screen |
 | [`nesting-depth`](#nesting-depth) | on, max 4 | control structures nested too deep |
 | [`file-length`](#file-length) | on, max 1000 | a file too long |
+| [`line-length`](#line-length) | on, max 100 | a line wider than the max, in characters |
+| [`unbounded-loop`](#unbounded-loop) | on | a loop with no upper bound: `while true`, `while :` |
 | [`duplication`](#duplication) | on | a block of code that is a copy of another one |
 | [`shellcheck`](#shellcheck) | on when installed | ShellCheck's findings, as `SC1234` rules |
 | [`parse-error`](#parse-error) | always | a file that is not valid bash |
 | [`baseline-stale`](#baseline-stale) | always, with a baseline | a baseline row to lower or remove |
 
-A measure rule reports a value **over** its max: a function at exactly 15
-passes `cognitive-complexity`.
+A rule with a max reports a value **over** it: a function at exactly 15
+passes `cognitive-complexity`, a line of exactly 100 characters passes
+`line-length`.
 
 ## cognitive-complexity
 
@@ -74,6 +77,83 @@ functions of their own.
 A file has more lines than the max (default 1000, as in SonarQube).
 
 **Fix it.** Split the file into libraries that the script `source`s.
+
+## line-length
+
+A line is wider than the max, in characters (Unicode characters, not
+bytes; a tab counts 1). The default of 100 is
+[TigerStyle](https://github.com/tigerbeetle/tigerbeetle/blob/main/docs/TIGER_STYLE.md)'s:
+a line you can read without scrolling, and two files side by side on one
+screen. Each long line is a finding, attributed to the function it is in.
+
+```text
+deploy.sh:31:101 warning line is 117 characters long (max 100) [line-length]
+```
+
+Unlike the other measures, width is read on the text: every line counts,
+comments, strings and heredoc bodies included, since a reader has to scroll
+them all the same. Where long lines are the point (generated files,
+templates, a heredoc that must stay as it is), exclude the paths:
+
+```yaml
+rules:
+  line-length:
+    exclude: ["templates", "*.generated.sh"]
+```
+
+`line-length` is a [count rule](baseline.md) with a max: a baseline row
+holds the number of long lines tolerated in a function, not the widest one.
+A row keyed on the widest line would let a function gain long lines as long
+as each stays under the widest, and the ratchet would only notice when that
+one line is shortened. A count fails on every new long line, and turns stale
+as soon as one is fixed.
+
+**Fix it.** Break the command at its arguments with `\`, one option per
+line; move a long pipeline's stages to their own lines after `|`; give a
+long string a variable, or build it with `printf`.
+
+## unbounded-loop
+
+A `while` or `until` loop whose condition is a constant that never ends it:
+only a `break`, a `return` or an `exit` inside gets out.
+
+```text
+deploy.sh:40:3 warning loop with no upper bound: bound it (a max count or a deadline) or assert one inside [unbounded-loop]
+```
+
+The conditions reported are one command among `true`, `:`, `false` and
+`(( n ))` with a number, negated with `!` or not, that keeps the loop
+running: `while true`, `while :`, `while (( 1 ))`, `until false`,
+`while ! false`. They are read on the syntax tree, so the same words in a
+string, a heredoc or a comment are not loops. A condition that can change,
+such as `while read -r line` or `while [[ $i -lt 3 ]]`, is a bound and is
+not reported.
+
+[TigerStyle](https://github.com/tigerbeetle/tigerbeetle/blob/main/docs/TIGER_STYLE.md)
+puts a limit on everything: a loop that waits for a service, polls a job or
+retries a download needs a number of tries or a deadline, or it hangs a
+deploy forever the day the service does not come back. Every such loop is
+reported, even one with a counter and a `break` inside: the bound belongs in
+the condition, where a reader sees it. A daemon's main loop, unbounded on
+purpose, goes in the [baseline](baseline.md) or the rule's `exclude`.
+
+**Fix it.** Put the bound in the condition:
+
+```bash
+# Before
+while true; do
+  curl -fsS "$url" && break
+  sleep 2
+done
+
+# After: 30 tries, then a clear error
+tries=0
+until curl -fsS "$url"; do
+  tries=$((tries + 1))
+  ((tries < 30)) || { echo "gave up on $url" >&2; return 1; }
+  sleep 2
+done
+```
 
 ## duplication
 
